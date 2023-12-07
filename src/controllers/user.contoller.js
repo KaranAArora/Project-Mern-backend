@@ -50,7 +50,7 @@ const registerUser = asyncHandler (async (req, res) => {
 
     // Checking Avatar Uploaded on Cloudinary.
     if (!avatarOnCloudinary) {
-        throw new ApiError(400 , "Avatar Image is Mandatory !!");
+        throw new ApiError(400 , "Error While Uploading Image on Cloudinary !!");
     }
     // Creating User on DB.
     const newRegUser = await User.create(
