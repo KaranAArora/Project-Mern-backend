@@ -13,13 +13,15 @@ const UploadonCloudinary = async function (localFliePath){
         if (!localFliePath) return null
         //Upload on Cloudinary 
         const response = await cloudinary.uploader.upload(localFliePath , {
-            resource_type : auto
+            resource_type : "auto"
         }) 
         // File Uploaded Successfully
        // console.log("File is Uploded Successfullly on Cloudinary", response.url);
        fs.unlinkSync(localFliePath)
+       console.log("In Cloudinary Utility : Upload Successfull!!")
         return response;
     } catch (error) {
+        console.log("Error in Catch of Uploading Image on Cloudinary");
         fs.unlinkSync(localFliePath) // Remove the File from Local Serer which was saved temp onoperation Fail.
         return null;
     }

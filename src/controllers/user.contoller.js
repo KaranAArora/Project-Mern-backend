@@ -65,7 +65,7 @@ const registerUser = asyncHandler (async (req, res) => {
     )
 
     // Checking if User is Created in DB or Not
-    const UserInDB = await newRegUser.findById(newRegUser._id).select(
+    const UserInDB = await User.findById(newRegUser._id).select(
         "-password -refreshToken"
     );
 
