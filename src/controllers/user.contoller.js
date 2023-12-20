@@ -255,11 +255,63 @@ const refeshAccessToken = asyncHandler(async (req, res) =>{
         console.log("In RefeshAccessToken Logic Catch !!");
         throw new ApiError(401, error?.message || "Invalid Refresh Token !!");
     }
-})
+});
+
+//User Change Current Password Logic
+const changeCurrentPassword = asyncHandler(async(req, res) =>{
+    //Getting Data from Body/Frontend
+    const {oldPassword, newPassword } = req.body;
+
+    //Getting User Id from DB.
+    const user = await User.findById(req.user?._id);
+
+    if (!user) {
+        throw new ApiError(400, "Invalid User Id !!");
+    }
+
+    //Decoding Password and Checking
+    const checkOldPasswordwithDB = user.isPasswordCorrect(oldPassword);
+
+    if (!checkOldPasswordwithDB) {
+        throw new ApiError(400, "Invalid Old Password !!");
+    }
+
+    //Replacing Old Password With New Password
+    user.password = newPassword;
+
+    //Upadting in DB
+    await user.save({validateBeforeSave : false});
+
+    // Returning Response
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Password Changed Successfully !!"
+            )
+        )
+
+});
+
+//Get Current User Logic
+const getCurrentUser = asyncHandler(async(req, res) => {
+    // Returning Response Using middleware
+    return res
+        .status(200)
+        .json(
+            200,
+            req.user,
+            "Current User Fetched Successfully !!"
+        )
+});
 
 export {
     registerUser,
     loginUser,
     logoutUser,
-    refeshAccessToken
+    refeshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser
 }
