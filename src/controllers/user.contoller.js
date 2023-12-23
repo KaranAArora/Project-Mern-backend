@@ -307,11 +307,120 @@ const getCurrentUser = asyncHandler(async(req, res) => {
         )
 });
 
+//Update User Account Details Logic
+const updateAccountDetails = asyncHandler(async (req, res) =>{
+    //Getting Data from Body
+    const {fullName, email} = req.body;
+
+    if (!fullName || !email) {
+        throw new ApiError(400, "All Fields are Mandatory !!");
+    }
+
+    const UpdateData = await User.findByIdAndUpdate(
+        req?.user._id,
+        {
+            $set :{
+                fullName,
+                email
+            }
+        },
+        {new : true }
+        ).select("-password");
+
+     // Returning Response
+    return res
+        .status(200)
+        .json(new ApiResponse(
+            200,
+            req.user,
+            "Data Updated Successfully !!"
+        ))
+});
+
+//Update Avatar Logic
+const updateUserAvatar = asyncHandler(async(req, res) =>{
+    // Getting Image from Body
+    const localImgPath = req.file?.path
+
+    if (!localImgPath) {
+        throw new ApiError(400, "Image is Mandatory !!");
+    }
+    // Upload Image on Cloudinary
+    const newAvatar = await UploadonCloudinary(localImgPath);
+
+    if (!newAvatar.url) {
+        throw new ApiError(500, "Error while Uploading New Avatar !!");
+    }
+
+    //Updating in DB
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set :{
+                avatar : newAvatar.url
+            }
+        },
+        {new : true}
+    ).select("-password")
+
+    // Returning Response
+    return res
+        .status(200)
+        .json(new ApiResponse(
+            200,
+            user,
+            "New Avatar Updated Succefully !!"
+        ))
+});
+
+//Update CoverAvatar Logic
+const updateUserCoverImage = asyncHandler(async(req, res) =>{
+    // Getting Image from Body
+    const localImgPath = req.file?.path
+
+    if (!localImgPath) {
+        throw new ApiError(400, "Image is Mandatory !!");
+    }
+    // Upload Image on Cloudinary
+    const newCoverImage = await UploadonCloudinary(localImgPath);
+
+    if (!newCoverImage.url) {
+        throw new ApiError(500, "Error while Uploading New Cover Image !!");
+    }
+
+    //Updating in DB
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set :{
+                coverImage : newCoverImage.url
+            }
+        },
+        {new : true}
+    ).select("-password")
+
+    //Returning Response
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user,
+                "Cover Image Updated Successfully !!"
+            )
+        )
+});
+
+
+//Export
 export {
     registerUser,
     loginUser,
     logoutUser,
     refeshAccessToken,
     changeCurrentPassword,
-    getCurrentUser
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage
 }
