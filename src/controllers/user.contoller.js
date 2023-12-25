@@ -4,6 +4,7 @@ import { User } from "../models/user.module.js";
 import { UploadonCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 //Creating Tokens Method
 const generateAccessTokenAndRefreshTokens = async(userId) => {
@@ -492,7 +493,66 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
                 "Channel Data Fetched Successfully !!"
             )
         )
-})
+});
+
+// Getting User Watch History Logic
+const getUserWathcHistory = asyncHandler(async(req, res) => {
+    // DB Query
+    const userWathcHistory = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from : "videos",
+                localField : "watchHistory",
+                foreignField : "_id",
+                as : "watchHistory",
+                pipeline :[
+                    {
+                        $lookup : {
+                            from : "users",
+                            localField : "owner",
+                            foreignField : "_id",
+                            as : "owner",
+                            pipeline :[
+                                {
+                                    $project : {
+                                        fullName : 1,
+                                        username : 1,
+                                        avatar : 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields : {
+                            owner:{
+                                $first : "$owner"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]);
+
+    console.log(userWathcHistory);
+
+    // Returning Response
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                userWathcHistory[0].watchHistory,
+                "User Watch History Fetched Successfully !!"
+            )
+        )
+});
 
 
 //Export
@@ -506,5 +566,6 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getUserWathcHistory
 }
